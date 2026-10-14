@@ -1,0 +1,29 @@
+name: Sincronizar con el repositorio original
+
+on:
+  schedule:
+    # Se ejecutará automáticamente todos los días a medianoche UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Permite ejecutar la sincronización manualmente con un botón
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configurar Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Sincronizar desde el upstream
+        run: |
+          git remote add upstream https://github.com/danidm98/rumbo.git || true
+          git fetch upstream
+          git checkout main || git checkout master
+          git merge upstream/main -m "Automerge: Sincronización automática con upstream" || git merge upstream/master -m "Automerge: Sincronización automática con upstream"
+          git push origin HEAD
